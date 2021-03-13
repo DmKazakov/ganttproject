@@ -1,7 +1,7 @@
 /*
-Copyright 2017 Roman Torkhov, BarD Software s.r.o
+Copyright 2021 BarD Software s.r.o
 
-This file is part of GanttProject, an opensource project management tool.
+This file is part of GanttProject, an open-source project management tool.
 
 GanttProject is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -16,15 +16,12 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
-package biz.ganttproject.impex.csv;
 
-import java.io.Closeable;
-import java.util.Iterator;
+package biz.ganttproject.core.chart.scene;
 
 /**
- * @author torkhov
+ * @author dbarashev@bardsoftware.com
  */
-interface SpreadsheetReader extends Closeable {
-
-  Iterator<SpreadsheetRecord> iterator();
+public interface IdentifiableRow {
+  int getRowId();
 }

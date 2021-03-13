@@ -73,18 +73,19 @@ class StorageDialogBuilder(
   init {
     // This will be called when user opens a project.
     myDocumentReceiver = Consumer { document: Document ->
-      document.asOnlineDocument()?.let {
-        if (it is GPCloudDocument) {
-          it.onboard(documentManager, webSocket)
-        }
-      }
       val killProgress = myDialogUi.toggleProgress(true)
       val onFinish = Channel<Boolean>()
 
       GlobalScope.launch(Dispatchers.IO) {
         try {
           projectUi.openProject(documentManager.getProxyDocument(document), myProject, onFinish)
-          onFinish.receive()
+          if (onFinish.receive()) {
+            document.asOnlineDocument()?.let {
+              if (it is GPCloudDocument) {
+                it.onboard(documentManager, webSocket)
+              }
+            }
+          }
           myDialogUi.close()
         } catch (e: IOException) {
           killProgress()
@@ -101,21 +102,21 @@ class StorageDialogBuilder(
     myDocumentUpdater = Consumer { document ->
       val killProgress = myDialogUi.toggleProgress(true)
       val onFinish = Channel<Boolean>()
+      documentManager.getProxyDocument(document).also {
+        it.createContents()
+        myProject.document = it
+      }
       GlobalScope.launch(Dispatchers.IO) {
         try {
-          myProject.document = documentManager.getProxyDocument(document)
-//          if (myProject.document == null) {
-//          } else {
-//            myProject.document.setMirror(document)
-//          }
           if (document.isLocal) {
             document.asLocalDocument()?.create()
           }
           projectUi.saveProject(myProject, onFinish)
-          onFinish.receive()
-          document.asOnlineDocument()?.let {
-            if (it is GPCloudDocument) {
-              it.onboard(documentManager, webSocket)
+          if (onFinish.receive()) {
+            document.asOnlineDocument()?.let {
+              if (it is GPCloudDocument) {
+                it.onboard(documentManager, webSocket)
+              }
             }
           }
           myDialogUi.toggleProgress(false)
